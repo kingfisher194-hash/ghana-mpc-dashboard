@@ -1,124 +1,185 @@
+# ==========================================================
+# MPC INTELLIGENCE DASHBOARD
+# HARUNA ABDUL-ATIK
+# VERSION 2.0
+# ==========================================================
+
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
-# ==================================
-# PAGE CONFIG
-# ==================================
-
-FILE_PATH = "MPC Data.xlsx"
+# ==========================================================
+# PAGE SETTINGS
+# ==========================================================
 
 st.set_page_config(
-    page_title="MPC Dashboard",
+    page_title="MPC Intelligence Dashboard",
+    page_icon="🏦",
     layout="wide"
 )
 
-# ==================================
-# LOAD DATA
-# ==================================
+# ==========================================================
+# CUSTOM STYLING
+# ==========================================================
 
-historical = pd.read_excel(
-    FILE_PATH,
-    sheet_name="Historical Data"
-)
+st.markdown("""
+<style>
 
-annual = pd.read_excel(
-    FILE_PATH,
-    sheet_name="Annual Inflation"
-)
+.stApp{
+    background-color:#f8f9fa;
+}
 
-# ==================================
-# SIDEBAR
-# ==================================
+h1,h2,h3{
+    color:#003366;
+}
 
-st.sidebar.title("MPC Dashboard")
+[data-testid="metric-container"]{
+    background:white;
+    border:1px solid #dce3ea;
+    border-radius:12px;
+    padding:15px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+# ==========================================================
+# EXCEL FILE
+# ==========================================================
+
+FILE = "MPC Data.xlsx"
+
+forecast = pd.read_excel(FILE, sheet_name="Forecast Output")
+
+feature = pd.read_excel(FILE, sheet_name="Feature_Importance")
+
+adf = pd.read_excel(FILE, sheet_name="ADF_Tests")
+
+ardl = pd.read_excel(FILE, sheet_name="ARDL_Results")
+
+ols = pd.read_excel(FILE, sheet_name="OLS_Results")
+
+vif = pd.read_excel(FILE, sheet_name="VIF Results")
+
+scenario = pd.read_excel(FILE, sheet_name="Scenario Results")
+
+timeline = pd.read_excel(FILE, sheet_name="Transmission_Timeline")
+
+best_lag = pd.read_excel(FILE, sheet_name="Best_Lag_Drivers")
 
 page = st.sidebar.radio(
     "Navigation",
     [
-        "Executive Dashboard",
-        "Forecast Analysis",
-        "Inflation Drivers",
-        "Lag Transmission",
-        "Model Diagnostics"
+        "🏦 Command Centre",
+        "📈 Inflation Outlook",
+        "🔥 Inflation Drivers",
+        "🧠 MPC Briefing",
+        "📊 Econometric Diagnostics",
+        "🎯 Scenarios & Transmission"
     ]
 )
 
-# ==================================
-# EXECUTIVE DASHBOARD
-# ==================================
+if page == "🏦 Command Centre":
 
-if page == "Executive Dashboard":
+    st.title("🏦 MPC Intelligence Dashboard")
 
-    st.title("📈 Monetary Policy Committee Dashboard")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        st.metric(
-            "Inflation Rate (Dec 2022)",
-            "54.1%"
-        )
-
-    with col2:
-        st.metric(
-            "Avg. Inflation (2022)",
-            "31.45%"
-        )
-
-    with col3:
-        st.metric(
-            "Model Accuracy",
-            "98%"
-        )
-
-    with col4:
-        st.metric(
-            "Policy Stance",
-            "HAWKISH"
-        )
-
-    st.subheader("MPC Snapshot")
-
-    st.success(
-        """
-Headline inflation ended 2022 at 54.1%, significantly above historical trends and indicative of substantial price pressures within the economy.
-
-Inflation persistence remains elevated, suggesting that inflationary dynamics continue to carry over between periods.
-
-Credit-to-Deposit Ratio, Inflation Lag and Non-Food Inflation are the most influential predictors of inflation within the forecasting model.
-
-The overall macroeconomic environment supports a hawkish monetary policy stance aimed at restoring price stability.
-
-        """
+    st.markdown(
+        "### Inflation Forecasting & Monetary Policy Analytics"
     )
 
+    col1,col2,col3,col4 = st.columns(4)
 
-
-    annual_chart = annual.copy()
-
-    annual_chart["Inflation (%)"] = (
-        annual_chart["Headline Inflation (%)"] * 100
+    col1.metric(
+        "Model Type",
+        "XGBoost"
     )
 
-    st.subheader(
-        "Ghana Inflation Trend (2009-2022)"
+    col2.metric(
+    "Top Driver",
+    "Inflation_Lag1"
+)
+
+    col3.metric(
+        "Inflation Risk",
+        "Moderate"
     )
 
-    fig = px.line(
-        annual_chart,
-        x="Year",
-        y="Inflation (%)",
-        markers=True
+    col4.metric(
+        "Policy Bias",
+        "Hold"
     )
 
-    fig.update_yaxes(
-        ticksuffix="%"
+    st.markdown("---")
+
+    st.subheader("Executive Assessment")
+
+    st.info("""
+### Monetary Policy Assessment
+
+The forecasting framework suggests that inflation in Ghana remains primarily driven by inflation persistence, non-food inflation pressures and domestic monetary conditions.
+
+Machine learning analysis identifies past inflation outcomes as the strongest predictor of future inflation developments.
+
+Current model outputs indicate moderate inflation risks. While inflationary pressures remain present, prevailing macroeconomic conditions suggest that these risks remain broadly manageable.
+
+The evidence supports a neutral monetary policy stance while maintaining close monitoring of exchange-rate developments, credit conditions and inflation expectations.
+""")
+
+    st.success("""
+### Key MPC Messages
+
+✅ Inflation persistence remains the dominant inflation driver.
+
+✅ Non-food inflation remains a key source of price pressure.
+
+✅ Policy transmission channels remain active.
+
+✅ Exchange-rate developments remain an upside inflation risk.
+
+✅ Current risks appear manageable under prevailing conditions.
+""")
+
+elif page == "📈 Inflation Outlook":
+    st.title("📈 Inflation Outlook")
+
+    st.markdown("""
+### Inflation Forecast Performance
+
+This section compares actual inflation outcomes against predictions generated by the XGBoost forecasting framework.
+
+The close alignment between actual and predicted inflation provides confidence in the model's ability to capture inflation dynamics and support monetary policy analysis.
+""")
+
+    fig = go.Figure()
+
+    fig.add_trace(
+        go.Scatter(
+            x=forecast["Date"],
+            y=forecast["Actual_Inflation"],
+            mode="lines",
+            name="Actual Inflation",
+            line=dict(color="navy", width=3)
+        )
+    )
+
+    fig.add_trace(
+        go.Scatter(
+            x=forecast["Date"],
+            y=forecast["Predicted_Inflation"],
+            mode="lines",
+            name="Predicted Inflation",
+            line=dict(color="crimson", width=3)
+        )
     )
 
     fig.update_layout(
-        template="plotly_white",
-        height=500
+        title="Actual vs Predicted Inflation",
+        height=600,
+        hovermode="x unified",
+        template="plotly_white"
     )
 
     st.plotly_chart(
@@ -126,569 +187,304 @@ The overall macroeconomic environment supports a hawkish monetary policy stance 
         use_container_width=True
     )
 
-
-
-# =====================================================
-# FORECAST ANALYSIS
-# =====================================================
-
-elif page == "Forecast Analysis":
-
-    st.title("📉 Forecast Analysis")
-
-    # Load Forecast Data
-    forecast = pd.read_excel(
-        FILE_PATH,
-        sheet_name="Forecast Output"
-    )
-
-    # ============================
-    # KPI SECTION
-    # ============================
-    st.subheader("Model Performance")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        st.metric("R²", "98%")
-
-    with col2:
-        st.metric("MAE", "0.0052")
-
-    with col3:
-        st.metric("RMSE", "0.0079")
-
-    with col4:
-        st.metric("Forecast Accuracy", "98%")
-
     st.markdown("---")
 
-    # ============================
-    # MODEL INTERPRETATION
-    # ============================
-    st.success(
-        """
-        The XGBoost model demonstrates strong predictive
-        performance, explaining approximately 98% of
-        inflation movements in the dataset.
+    col1,col2,col3 = st.columns(3)
 
-        Low MAE and RMSE values indicate minimal forecast
-        errors and high reliability of inflation predictions.
-        """
+    col1.metric(
+        "R²",
+        "0.98"
     )
 
-    # ============================
-    # PREPARE DATA
-    # ============================
-
-    chart_df = forecast.copy()
-
-    chart_df["Actual (%)"] = (
-        chart_df["Actual_Inflation"] * 100
+    col2.metric(
+        "MAE",
+        "0.0052"
     )
 
-    chart_df["Predicted (%)"] = (
-        chart_df["Predicted_Inflation"] * 100
+    col3.metric(
+        "RMSE",
+        "0.0079"
     )
 
-    # ============================
-    # ACTUAL VS PREDICTED CHART
-    # ============================
+    st.success("""
+### Interpretation
 
-    st.subheader("Actual vs Predicted Inflation")
+The forecasting framework explains approximately 98 percent of observed inflation movements.
 
-    fig = px.line(
-        chart_df,
-        x="Date",
-        y=["Actual (%)", "Predicted (%)"],
-        title="Actual vs Predicted Inflation"
-    )
+The low MAE and RMSE values indicate minimal forecasting error, while the high R² suggests that the selected macroeconomic indicators successfully capture inflation dynamics.
 
-    fig.update_yaxes(
-        ticksuffix="%"
-    )
+These results support the use of the model as a decision-support tool for inflation monitoring and policy analysis.
+""")
 
-    fig.update_layout(
-        template="plotly_white",
-        height=550,
-        legend_title=""
-    )
+elif page == "🔥 Inflation Drivers":
 
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
+    st.title("🔥 Inflation Drivers & Risk Assessment")
 
-    # ============================
-    # FORECAST ERROR ANALYSIS
-    # ============================
+    st.info("""
+### Inflation Driver Analysis
 
-    chart_df["Error (%)"] = (
-        chart_df["Actual (%)"]
-        - chart_df["Predicted (%)"]
-    )
+The machine learning model evaluates the contribution of each macroeconomic variable to inflation outcomes.
 
-    st.subheader("Forecast Error Analysis")
+Higher feature importance scores indicate variables with greater explanatory power in forecasting inflation trends.
 
-    error_fig = px.bar(
-        chart_df,
-        x="Date",
-        y="Error (%)",
-        title="Forecast Errors"
-    )
+Understanding these drivers helps policymakers identify inflation risks and prioritize policy responses.
+""")
 
-    error_fig.update_layout(
-        template="plotly_white",
-        height=400
-    )
-
-    st.plotly_chart(
-        error_fig,
-        use_container_width=True
-    )
-
-    # ============================
-    # FORECAST OUTPUT TABLE
-    # ============================
-
-    st.subheader("Forecast Results")
-
-    st.dataframe(
-        chart_df[
-            [
-                "Date",
-                "Actual (%)",
-                "Predicted (%)",
-                "Error (%)"
-            ]
-        ],
-        use_container_width=True
-    )
-
-    # ============================
-    # MPC INSIGHTS
-    # ============================
-
-    st.subheader("Monetary Policy Insights")
-
-    st.info(
-        """
-        • The model closely tracks historical inflation movements.
-
-        • Forecast errors remain relatively low across the sample.
-
-        • Major inflation turning points are accurately captured.
-
-        • The model can serve as a supporting tool for
-          Monetary Policy Committee (MPC) discussions.
-
-        • Results should complement economic judgement,
-          macroeconomic analysis and policy assessment.
-        """
-    )
-
-    st.markdown("---")
-
-    st.caption(
-        "MPC Dashboard | Ghana Inflation Forecasting using XGBoost"
-    )
-# ==================================
-# INFLATION DRIVERS
-# ==================================
-
-elif page == "Inflation Drivers":
-
-    st.title("📊 Inflation Drivers")
-
-    feature_df = pd.read_excel(
-        FILE_PATH,
-        sheet_name="XGBoost_Feature",
-        header=1
-    )
-
-    feature_df = feature_df[
-        ["feature", "importance"]
-    ]
-
-    feature_df["importance"] = (
-        feature_df["importance"] * 100
-    )
-
-    feature_df = feature_df.sort_values(
-        "importance",
+    feature = feature.sort_values(
+        by="Importance",
         ascending=False
     )
 
-    top6 = feature_df.head(6)
-
     fig = px.bar(
-        top6,
-        x="importance",
-        y="feature",
+        feature,
+        x="Importance",
+        y="Feature",
         orientation="h",
-        text="importance",
-        color="importance",
+        title="Feature Importance Ranking",
+        color="Importance",
         color_continuous_scale="Blues"
     )
 
-    fig.update_traces(
-        texttemplate="%{text:.1f}%"
-    )
-
     fig.update_layout(
-        template="plotly_white",
-        height=550,
-        yaxis=dict(
-            categoryorder="total ascending"
-        )
+        height=650
     )
 
     st.plotly_chart(
         fig,
         use_container_width=True
     )
-
-    st.success(
-        """
-        Inflation pressures are primarily driven by
-        credit expansion, inflation persistence and
-        non-food inflation developments.
-
-        Credit-to-Deposit Ratio is the most influential
-        predictor of inflation in the model.
-        """
-    )
-
-# =====================================================
-# LAG TRANSMISSION
-# =====================================================
-
-elif page == "Lag Transmission":
-
-    st.title("⏳ Lag Transmission Analysis")
-
-    st.markdown("""
-    This page shows how long selected macroeconomic variables
-    take to transmit their impact to inflation.
-    
-    Understanding transmission lags helps policymakers assess
-    the timing of monetary policy actions and other economic shocks.
-    """)
-
-    # =====================================
-    # LOAD DATA
-    # =====================================
-
-    lag_data = pd.DataFrame({
-
-        "Variable": [
-            "Gold Price",
-            "Oil Price",
-            "Cocoa Price",
-            "Private Sector Credit",
-            "Monetary Policy Rate"
-        ],
-
-        "Transmission Lag (Months)": [
-            12,
-            6,
-            6,
-            1,
-            0
-        ]
-
-    })
-
-    # =====================================
-    # KPI CARDS
-    # =====================================
-
-    st.subheader("Lag Summary")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(
-            "Longest Lag",
-            "12 Months"
-        )
-
-    with col2:
-        st.metric(
-            "Shortest Lag",
-            "0 Months"
-        )
-
-    with col3:
-        st.metric(
-            "Average Lag",
-            "5 Months"
-        )
-
-    # =====================================
-    # BAR CHART
-    # =====================================
-
-    st.subheader("Transmission Lag by Variable")
-
-    fig = px.bar(
-        lag_data,
-        x="Transmission Lag (Months)",
-        y="Variable",
-        orientation="h",
-        text="Transmission Lag (Months)",
-        color="Transmission Lag (Months)",
-        color_continuous_scale="Oranges",
-        title="Lag Structure of Inflation Drivers"
-    )
-
-    fig.update_layout(
-        template="plotly_white",
-        height=550,
-        yaxis=dict(
-            categoryorder="total ascending"
-        )
-    )
-
-    st.plotly_chart(
-        fig,
-        use_container_width=True
-    )
-
-    # =====================================
-    # TABLE
-    # =====================================
-
-    st.subheader("Lag Data")
-
-    st.dataframe(
-        lag_data,
-        use_container_width=True
-    )
-
-    # =====================================
-    # INTERPRETATION
-    # =====================================
-
-    st.subheader("Policy Interpretation")
-
-    st.info(
-        """
-        • Gold price changes take approximately 12 months
-        to fully affect inflation.
-
-        • Oil price movements influence inflation after
-        roughly 6 months.
-
-        • Cocoa price effects are observed after
-        approximately 6 months.
-
-        • Private sector credit impacts inflation after
-        around 1 month.
-
-        • Monetary Policy Rate adjustments have an
-        immediate effect in the model.
-        """
-    )
-
-    # =====================================
-    # MPC INSIGHTS
-    # =====================================
-
-    st.subheader("Monetary Policy Insights")
-
-    st.success(
-        """
-        The results suggest that commodity prices operate
-        through relatively long transmission channels,
-        while monetary policy and credit conditions affect
-        inflation more rapidly.
-
-        Policymakers should therefore adopt a forward-looking
-        approach when responding to inflation pressures,
-        particularly those driven by external commodity shocks.
-        """
-    )
-
-    st.markdown("---")
-
-    st.caption(
-        "MPC Dashboard | Ghana Inflation Transmission Analysis"
-    )
-# =====================================================
-# MODEL DIAGNOSTICS
-# =====================================================
-
-elif page == "Model Diagnostics":
-
-    st.title("🔍 Model Diagnostics")
-
-    st.markdown("""
-    This section evaluates the overall performance of the
-    inflation forecasting model.
-    """)
-
-    # =====================================
-    # KPI CARDS
-    # =====================================
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    with col1:
-        st.metric(
-            "R²",
-            "98%"
-        )
-
-    with col2:
-        st.metric(
-            "MAE",
-            "0.0052"
-        )
-
-    with col3:
-        st.metric(
-            "RMSE",
-            "0.0079"
-        )
-
-    with col4:
-        st.metric(
-            "Model Accuracy",
-            "98%"
-        )
-
-    st.markdown("---")
-
-    # =====================================
-    # PERFORMANCE SCORE
-    # =====================================
-
-    st.subheader("Model Health")
-
-    st.progress(98)
 
     st.success("""
-    The model achieved excellent predictive performance,
-    explaining approximately 98% of inflation variation.
-    Forecast errors remain very low across observations.
-    """)
+### Key Findings
 
-    # =====================================
-    # METRIC DEFINITIONS
-    # =====================================
+• Inflation persistence remains the strongest inflation determinant.
 
-    st.subheader("Metric Interpretation")
+• Non-food inflation contributes significantly to inflation dynamics.
 
-    metric_df = pd.DataFrame({
+• Monetary Policy Rate variables confirm policy transmission effects.
 
-        "Metric": [
-            "R²",
-            "MAE",
-            "RMSE"
-        ],
+• Exchange-rate developments continue to influence inflation movements.
 
-        "Value": [
-            "98%",
-            "0.0052",
-            "0.0079"
-        ],
-
-        "Interpretation": [
-
-            "Excellent explanatory power",
-
-            "Average forecast error is very small",
-
-            "Prediction errors remain low"
-
-        ]
-
-    })
+• Credit conditions remain relevant for aggregate demand and inflation pressures.
+""")
 
     st.dataframe(
-        metric_df,
+        feature,
         use_container_width=True
     )
 
-    # =====================================
-    # PERFORMANCE CHART
-    # =====================================
+elif page == "🧠 MPC Briefing":
 
-    st.subheader("Diagnostic Summary")
+    st.title("🧠 Monetary Policy Briefing")
 
-    diagnostics = pd.DataFrame({
+    st.warning("""
+### Executive Briefing Note
 
-        "Metric": [
-            "R²",
-            "Accuracy"
-        ],
+The model identifies inflation persistence as the dominant driver of inflation in Ghana.
 
-        "Score": [
-            98,
-            98
+Non-food inflation remains a major source of price pressure, while monetary policy conditions continue to influence inflation outcomes through transmission effects.
+
+Overall inflation risks remain moderate, although exchange-rate depreciation and renewed commodity price volatility remain important upside risks.
+""")
+
+    st.markdown("""
+## Current Assessment
+
+Recent inflation developments suggest that underlying inflationary pressures remain present despite monetary policy tightening.
+
+## Key Risks
+
+✅ Exchange Rate Volatility
+
+✅ Commodity Price Shocks
+
+✅ Inflation Expectations
+
+✅ Excess Credit Expansion
+
+✅ Imported Inflation Pressures
+
+---
+
+## Policy Considerations
+
+Monetary authorities should continue monitoring inflation persistence, exchange-rate developments and credit growth while ensuring inflation expectations remain anchored.
+
+---
+
+## Recommended Policy Bias
+
+**HOLD**
+
+Current evidence supports maintaining a neutral policy stance while carefully assessing incoming inflation data and external risks.
+
+---
+
+## Conclusion
+
+The inflation outlook remains manageable under prevailing macroeconomic conditions. However, upside inflation risks remain sufficiently important to warrant continued vigilance.
+""")
+
+elif page == "📊 Econometric Diagnostics":
+
+    st.title("📊 Econometric Diagnostics & Validation")
+
+    st.markdown("""
+This section provides statistical and econometric validation of the inflation forecasting framework.
+
+The objective is to assess stationarity, long-run relationships, coefficient significance, multicollinearity and transmission dynamics.
+
+Together, these diagnostics strengthen confidence in the analytical framework and support robust monetary policy assessment.
+""")
+
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        [
+            "ADF Tests",
+            "ARDL Results",
+            "OLS Results",
+            "VIF Analysis",
+            "Lag Drivers"
         ]
-
-    })
-
-    fig = px.bar(
-        diagnostics,
-        x="Metric",
-        y="Score",
-        text="Score",
-        color="Score",
-        color_continuous_scale="Greens",
-        title="Model Performance Indicators"
     )
 
-    fig.update_layout(
-        template="plotly_white",
-        height=450
-    )
+    with tab1:
+        st.subheader("Stationarity Assessment")
 
-    st.plotly_chart(
-        fig,
+        st.info("""
+The Augmented Dickey-Fuller (ADF) test evaluates whether macroeconomic variables contain a unit root.
+
+Variables that are non-stationary may produce misleading regression results if not appropriately transformed.
+
+Stationarity testing is therefore a critical first step before undertaking econometric modelling and policy simulations.
+""")
+
+        st.dataframe(
+            adf,
+            use_container_width=True
+        )
+
+        st.success("""
+### Policy Interpretation
+
+Inflation-related variables often exhibit persistence over time.
+
+Where non-stationarity exists, transformations and lag structures help ensure the reliability of empirical findings and monetary policy recommendations.
+""")
+
+    with tab2:
+        st.subheader("ARDL Long-Run Relationships")
+
+        st.info("""
+The Autoregressive Distributed Lag (ARDL) framework estimates both short-run and long-run relationships between inflation and macroeconomic indicators.
+
+ARDL models are particularly useful when variables exhibit mixed orders of integration and when policy transmission effects occur gradually over time.
+""")
+
+        st.dataframe(
+            ardl,
+            use_container_width=True
+        )
+
+        st.success("""
+### Economic Interpretation
+
+The results suggest that inflation is influenced by monetary conditions, exchange-rate developments and broader macroeconomic fundamentals.
+
+Significant lagged inflation terms indicate that inflation persistence remains an important feature of the Ghanaian economy.
+""")
+
+    with tab3:
+        st.subheader("OLS Benchmark Model")
+
+        st.info("""
+Ordinary Least Squares estimation provides a traditional econometric benchmark against which machine-learning forecasts may be compared.
+
+The model estimates the direction, magnitude and statistical significance of relationships between inflation and key explanatory variables.
+""")
+
+        st.dataframe(
+            ols,
+            use_container_width=True
+        )
+
+        st.success("""
+### Interpretation
+
+Results broadly support findings obtained from machine-learning analysis and ARDL estimation.
+
+Variables with statistically significant coefficients may be considered important contributors to inflation dynamics and policy transmission.
+""")
+
+    with tab4:
+        st.subheader("Variance Inflation Factor Analysis")
+
+        st.info("""
+Variance Inflation Factor (VIF) statistics evaluate multicollinearity among explanatory variables.
+
+High VIF values suggest that variables contain overlapping information and may reduce model stability.
+
+Values below commonly accepted thresholds suggest that independent variables provide unique information.
+""")
+
+        st.dataframe(
+            vif,
+            use_container_width=True
+        )
+
+        st.success("""
+### Interpretation
+
+The reported VIF values indicate that multicollinearity is not a significant concern within the modelling framework.
+
+This strengthens confidence in coefficient estimates and variable importance rankings.
+""")
+
+    with tab5:
+        st.subheader("Monetary Policy Transmission Lags")
+
+        st.info("""
+Inflation does not respond immediately to monetary policy actions or economic shocks.
+
+This analysis identifies the lag at which each macroeconomic indicator exhibits its strongest relationship with inflation.
+
+Understanding transmission lags helps policymakers assess the timing and effectiveness of policy interventions.
+""")
+
+        st.dataframe(
+            best_lag,
+            use_container_width=True
+        )
+
+        st.success("""
+### Key Insight
+
+Exchange-rate movements, credit conditions and monetary policy variables influence inflation through different transmission horizons.
+
+Recognising these lags is crucial when interpreting current inflation data and designing future policy actions.
+""")
+
+elif page == "🎯 Scenarios & Transmission":
+
+    st.title("🎯 Scenario Analysis & Policy Transmission")
+
+    st.markdown("""
+Scenario analysis evaluates how inflation may respond under different macroeconomic conditions.
+
+These simulations allow policymakers to assess potential risks and understand how shocks may propagate through the economy.
+""")
+    st.subheader("Policy Transmission Timeline")
+
+    st.dataframe(
+        timeline,
         use_container_width=True
     )
-
-    # =====================================
-    # MPC INTERPRETATION
-    # =====================================
-
-    st.subheader("Economic Interpretation")
-
-    st.info("""
-    • The model exhibits strong predictive accuracy.
-
-    • Forecast errors are small and stable.
-
-    • Results support inflation forecasting for monetary
-      policy analysis.
-
-    • Feature importance and lag transmission analysis
-      should be reviewed alongside diagnostic metrics.
-
-    • Model output should complement expert judgement
-      rather than replace policy deliberation.
-    """)
-
-    # =====================================
-    # FINAL ASSESSMENT
-    # =====================================
-
-    st.subheader("Overall Assessment")
 
     st.success("""
-    Based on R², MAE and RMSE results, the XGBoost model
-    demonstrates a high degree of reliability for forecasting
-    inflation dynamics in Ghana.
+### Transmission Insights
 
-    The model is suitable as a decision-support tool for
-    Monetary Policy Committee discussions.
-    """)
+Monetary policy affects inflation through several interconnected channels.
 
-    st.markdown("---")
+Interest-rate adjustments influence borrowing costs, credit expansion, aggregate demand and ultimately price developments.
 
-    st.caption(
-        "MPC Dashboard | Model Diagnostics"
-    )
+Understanding these timing relationships improves policy calibration and communication.
+""")
